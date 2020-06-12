@@ -24,6 +24,7 @@ public class FreeClimb : MonoBehaviour
 
     public float horizontal;
     public float vertical;
+    public bool isMid;
 
     public IKSnapshot baseIKsnapshot;
 
@@ -96,15 +97,28 @@ public class FreeClimb : MonoBehaviour
             Vector3 v = helper.up * vertical;
             Vector3 moveDir = (h + v).normalized;
 
-            bool canMove = CanMove(moveDir);
-            if (!canMove || moveDir == Vector3.zero)
-                return;
+            if (isMid)
+            {
+                if (moveDir == Vector3.zero)
+                    return;
+            }
+            else
+            {
+                bool canMove = CanMove(moveDir);
+                if (!canMove || moveDir == Vector3.zero)
+                    return;
+            }
+
+            isMid = !isMid;
 
             t = 0;
             isLerping = true;
             startPos = transform.position;
-            //Vector3 tp = helper.position - transform.position;
-            targetPos = helper.position;
+            Vector3 tp = helper.position - transform.position;
+            float d = Vector3.Distance(helper.position, startPos) / 2;
+            tp *= positionOffset;
+            tp += transform.position;
+            targetPos = (isMid) ? tp : helper.position;
 
             a_hook.CreatePositions(targetPos);
         }
