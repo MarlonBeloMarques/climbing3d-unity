@@ -120,7 +120,7 @@ public class FreeClimb : MonoBehaviour
             tp += transform.position;
             targetPos = (isMid) ? tp : helper.position;
 
-            a_hook.CreatePositions(targetPos);
+            a_hook.CreatePositions(targetPos, moveDir, isMid);
         }
         else
         {
@@ -188,7 +188,7 @@ public class FreeClimb : MonoBehaviour
             t = 1;
             inPosition = true;
 
-            a_hook.CreatePositions(targetPos);
+            a_hook.CreatePositions(targetPos, Vector3.zero, false);
         }
 
         Vector3 tp = Vector3.Lerp(startPos, targetPos, t);
