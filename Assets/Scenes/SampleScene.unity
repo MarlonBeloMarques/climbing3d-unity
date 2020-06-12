@@ -266,7 +266,19 @@ MonoBehaviour:
   inAngleDis: 1
   horizontal: 0
   vertical: 0
+  baseIKsnapshot:
+    rh: {x: 0.5, y: 1.5, z: 0}
+    lh: {x: -0.5, y: 1.5, z: 0}
+    lf: {x: -0.5, y: -0.2, z: 0}
+    rf: {x: 0.5, y: -0.2, z: 0}
+  a_hook: {fileID: 538686620}
   delta: 0
+--- !u!1 &538686617 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -927199367670048503, guid: bc5f745e22b6898448356b7176977720,
+    type: 3}
+  m_PrefabInstance: {fileID: 1820818164}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &538686618 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -4216859302048453862, guid: bc5f745e22b6898448356b7176977720,
@@ -279,6 +291,22 @@ Animator:
     type: 3}
   m_PrefabInstance: {fileID: 1820818164}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &538686620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 538686617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0da91c2ec5cb3d4dabeaedfe3cb92be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  w_rh: 0
+  w_lh: 0
+  w_lf: 0
+  w_rf: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

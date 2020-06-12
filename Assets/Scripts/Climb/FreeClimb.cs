@@ -25,6 +25,10 @@ public class FreeClimb : MonoBehaviour
     public float horizontal;
     public float vertical;
 
+    public IKSnapshot baseIKsnapshot;
+
+    public FreeClimbAnimHook a_hook;
+
     Transform helper;
 
     [SerializeField]
@@ -39,6 +43,7 @@ public class FreeClimb : MonoBehaviour
     {
         helper = new GameObject().transform;
         helper.name = "climb helper";
+        a_hook.Init(this, helper);
 
         CheckForClimb();
     }
@@ -100,6 +105,8 @@ public class FreeClimb : MonoBehaviour
             startPos = transform.position;
             //Vector3 tp = helper.position - transform.position;
             targetPos = helper.position;
+
+            a_hook.CreatePositions(targetPos);
         }
         else
         {
@@ -167,7 +174,7 @@ public class FreeClimb : MonoBehaviour
             t = 1;
             inPosition = true;
 
-            // enable the ik
+            a_hook.CreatePositions(targetPos);
         }
 
         Vector3 tp = Vector3.Lerp(startPos, targetPos, t);
@@ -183,4 +190,10 @@ public class FreeClimb : MonoBehaviour
         Vector3 offset = direction * offsetFromWall;
         return target + offset;
     }
+}
+
+[System.Serializable]
+public class IKSnapshot
+{
+    public Vector3 rh, lh, lf, rf;
 }
