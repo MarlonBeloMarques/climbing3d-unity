@@ -48,7 +48,7 @@ public class FreeClimb : MonoBehaviour
         helper.name = "climb helper";
         a_hook.Init(this, helper);
 
-        CheckForClimb();
+       // CheckForClimb();
     }
 
     public void CheckForClimb()
@@ -73,12 +73,6 @@ public class FreeClimb : MonoBehaviour
         t = 0;
         inPosition = false;
         anim.CrossFade("climb_idle", 2);
-    }
-
-    private void Update()
-    {
-        delta = Time.deltaTime;
-        Tick(delta);
     }
 
     public void Tick(float delta)

@@ -7,6 +7,11 @@ public class CameraHolder : MonoBehaviour
     public Transform target;
     public float speed = 9;
 
+    public static CameraHolder singleton;
+    private void Awake()
+    {
+        singleton = this;
+    }
     private void FixedUpdate()
     {
         if (target == null)
