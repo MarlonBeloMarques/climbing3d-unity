@@ -68,7 +68,7 @@ public class FreeClimbAnimHook : MonoBehaviour
     {
         isLeft = (moveDir.x <= 0);
 
-        if(moveDir.x != 0)
+        if (moveDir.x != 0)
         {
             goals.lh = isLeft;
             goals.rh = !isLeft;
@@ -94,19 +94,26 @@ public class FreeClimbAnimHook : MonoBehaviour
     {
         if (isMid)
         {
-            if(moveDir.y != 0)
+            if (moveDir.y != 0)
             {
-                if(moveDir.y < 0)
+                if (moveDir.x == 0)
                 {
-                 
+                    isMirror = !isMirror;
+                    anim.SetBool("mirror", isMirror);
                 }
                 else
                 {
-                    
+                    if (moveDir.y < 0)
+                    {
+                        isMirror = (moveDir.x > 0);
+                        anim.SetBool("mirror", isMirror);
+                    }
+                    else
+                    {
+                        isMirror =(moveDir.x < 0);
+                        anim.SetBool("mirror", isMirror);
+                    }
                 }
-
-                isMirror = !isMirror;
-                anim.SetBool("mirror", isMirror);
 
                 anim.CrossFade("climb up", 0.2f);
             }
@@ -121,32 +128,64 @@ public class FreeClimbAnimHook : MonoBehaviour
     {
         IKSnapshot r = new IKSnapshot();
         Vector3 _lh = LocalToWorld(ikBase.lh);
-        r.lh = GetPosActual(_lh);
+        r.lh = GetPosActual(_lh, AvatarIKGoal.LeftHand);
 
         Vector3 _rh = LocalToWorld(ikBase.rh);
-        r.rh = GetPosActual(_rh);
+        r.rh = GetPosActual(_rh, AvatarIKGoal.RightHand);
 
         Vector3 _lf = LocalToWorld(ikBase.lf);
-        r.lf = GetPosActual(_lf);
+        r.lf = GetPosActual(_lf, AvatarIKGoal.LeftFoot);
 
         Vector3 _rf = LocalToWorld(ikBase.rf);
-        r.rf = GetPosActual(_rf);
+        r.rf = GetPosActual(_rf, AvatarIKGoal.RightFoot);
         return r;
     }
 
     public float wallOffset = 0;
 
-    Vector3 GetPosActual(Vector3 o)
+    Vector3 GetPosActual(Vector3 o, AvatarIKGoal goal)
     {
         Vector3 r = o;
         Vector3 origin = o;
         Vector3 dir = h.forward;
         origin += -(dir * 0.2f);
         RaycastHit hit;
-        if(Physics.Raycast(origin, dir, out hit, 1.5f))
+
+        bool isHit = false;
+        if (Physics.Raycast(origin, dir, out hit, 1.5f))
         {
             Vector3 _r = hit.point + (hit.normal * wallOffset);
             r = _r;
+            isHit = true;
+
+            if(goal == AvatarIKGoal.LeftFoot || goal == AvatarIKGoal.RightFoot)
+            {
+                if(hit.point.y > transform.position.y - 0.1f)
+                {
+                    isHit = false;
+                }
+            }
+        }
+
+        if (!isHit)
+        {
+            switch (goal)
+            {
+                case AvatarIKGoal.LeftFoot:
+                    r = LocalToWorld(ikBase.lf);
+                    break;
+                case AvatarIKGoal.RightFoot:
+                    r = LocalToWorld(ikBase.rf);
+                    break;
+                case AvatarIKGoal.LeftHand:
+                    r = LocalToWorld(ikBase.lh);
+                    break;
+                case AvatarIKGoal.RightHand:
+                    r = LocalToWorld(ikBase.rh);
+                    break;
+                default:
+                    break;
+            }
         }
 
         return r;
@@ -164,17 +203,28 @@ public class FreeClimbAnimHook : MonoBehaviour
     {
         if (isMid)
         {
-            if(isTrue)
+            Vector3 p = GetPosActual(pos, goal);
+
+            if (isTrue)
             {
-                Vector3 p = GetPosActual(pos);
                 UpdateIKPosition(goal, p);
+            }
+            else
+            {
+                if(goal == AvatarIKGoal.LeftFoot || goal == AvatarIKGoal.RightFoot)
+                {
+                    if (p.y > transform.position.y - 0.25f)
+                    {
+                       // UpdateIKPosition(goal, p);
+                    }
+                }
             }
         }
         else
         {
             if (!isTrue)
             {
-                Vector3 p = GetPosActual(pos);
+                Vector3 p = GetPosActual(pos, goal);
                 UpdateIKPosition(goal, p);
             }
         }
@@ -182,7 +232,7 @@ public class FreeClimbAnimHook : MonoBehaviour
 
     public void UpdateIKPosition(AvatarIKGoal goal, Vector3 pos)
     {
-        switch(goal)
+        switch (goal)
         {
             case AvatarIKGoal.LeftFoot:
                 lf = pos;
@@ -244,19 +294,19 @@ public class FreeClimbAnimHook : MonoBehaviour
     private void SetIKPos(AvatarIKGoal goal, Vector3 tp, float w)
     {
         IKStates ikState = GetIKStates(goal);
-        if(ikState == null)
+        if (ikState == null)
         {
             ikState = new IKStates();
             ikState.goal = goal;
             ikStates.Add(ikState);
         }
 
-        if(w == 0)
+        if (w == 0)
         {
             ikState.isSet = false;
         }
 
-        if(!ikState.isSet)
+        if (!ikState.isSet)
         {
             ikState.position = GoalToBodyBones(goal).position;
             ikState.isSet = true;
@@ -281,7 +331,7 @@ public class FreeClimbAnimHook : MonoBehaviour
                 return anim.GetBoneTransform(HumanBodyBones.LeftHand);
             default:
             case AvatarIKGoal.RightHand:
-                 return anim.GetBoneTransform(HumanBodyBones.RightHand);
+                return anim.GetBoneTransform(HumanBodyBones.RightHand);
 
         }
     }
@@ -291,7 +341,7 @@ public class FreeClimbAnimHook : MonoBehaviour
         IKStates r = null;
         foreach (IKStates i in ikStates)
         {
-            if(i.goal == goal)
+            if (i.goal == goal)
             {
                 r = i;
                 break;

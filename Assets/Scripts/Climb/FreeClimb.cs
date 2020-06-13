@@ -20,7 +20,9 @@ public class FreeClimb : MonoBehaviour
     public float speed_multiplier = 0.2f;
     public float climbSpeed = 3;
     public float rotateSpeed = 5;
-    public float inAngleDis = 1;
+
+    public float rayForwardTowardsWall = 1;
+    public float rayTowardsMoveDir = 0.5f;
 
     public float horizontal;
     public float vertical;
@@ -140,21 +142,25 @@ public class FreeClimb : MonoBehaviour
     bool CanMove(Vector3 moveDir)
     {
         Vector3 origin = transform.position;
-        float dis = positionOffset;
+        float dis = rayTowardsMoveDir;
         Vector3 dir = moveDir;
-        Debug.DrawRay(origin, dir * dis, Color.red);
-        RaycastHit hit;
 
+        DebugLine.singleton.SetLine(origin, origin + (dir * dis), 0);
+
+        //Raycast towrads the direction you want to move
+        RaycastHit hit;
         if(Physics.Raycast(origin, dir, out hit, dis))
         {
+            //Check if it's a corner
             return false;
         }
 
         origin += moveDir * dis;
         dir = helper.forward;
-        float dis2 = inAngleDis;
+        float dis2 = rayForwardTowardsWall;
 
-        Debug.DrawRay(origin, dir * dis2, Color.blue);
+        //Raycast forward towards the wall
+        DebugLine.singleton.SetLine(origin, origin + (dir * dis2), 1);
         if (Physics.Raycast(origin, dir, out hit, dis))
         {
             helper.position = PosWithOffset(origin, hit.point);
@@ -162,13 +168,27 @@ public class FreeClimb : MonoBehaviour
             return true;
         }
 
+        origin = origin + (dir * dis2);
+        dir = -moveDir;
+        DebugLine.singleton.SetLine(origin, origin + dir, 1);
+        if (Physics.Raycast(origin, dir, out hit, rayForwardTowardsWall))
+        {
+            helper.position = PosWithOffset(origin, hit.point);
+            helper.rotation = Quaternion.LookRotation(-hit.normal);
+            return true;
+        }
+
+       // return false;
+
         origin += dir * dis2;
         dir = -Vector3.up;
 
-        Debug.DrawRay(origin, dir, Color.yellow);
+        DebugLine.singleton.SetLine(origin, origin + dir, 2);
+
+        //Debug.DrawRay(origin, dir, Color.yellow);
         if(Physics.Raycast(origin, dir, out hit, dis2))
         {
-            float angle = Vector3.Angle(helper.up, hit.normal);
+            float angle = Vector3.Angle(-helper.forward, hit.normal);
             if(angle < 40)
             {
                 helper.position = PosWithOffset(origin, hit.point);
