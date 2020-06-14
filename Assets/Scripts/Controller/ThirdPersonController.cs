@@ -22,8 +22,14 @@ public class ThirdPersonController : MonoBehaviour
 
     public bool onGround;
     bool keepOffGround;
+    bool climbOff;
 
+    float climbTimer;
     float savedTime;
+
+    public bool isClimbing;
+
+    FreeClimb freeClimb;
 
     private void Start()
     {
@@ -35,12 +41,16 @@ public class ThirdPersonController : MonoBehaviour
 
         camHolder = CameraHolder.singleton.transform;
         anim = GetComponentInChildren<Animator>();
+        freeClimb = GetComponent<FreeClimb>();
     }
 
     private void FixedUpdate()
     {
+        if (isClimbing)
+            return;
+
         onGround = OnGround();
-        Movement();  
+        Movement();
     }
 
     void Movement()
@@ -72,17 +82,46 @@ public class ThirdPersonController : MonoBehaviour
 
     private void Update()
     {
+        if (isClimbing)
+        {
+            freeClimb.Tick(Time.deltaTime);
+            return;
+        }
+
+
         onGround = OnGround();
 
         if (keepOffGround)
         {
-            if(Time.realtimeSinceStartup - savedTime > 0.5f)
+            if ((Time.realtimeSinceStartup - savedTime) > 0.5f)
             {
                 keepOffGround = false;
             }
         }
 
         Jump();
+
+        if (!onGround && !keepOffGround)
+        {
+            if (!climbOff)
+            {
+
+
+                isClimbing = freeClimb.CheckForClimb();
+                if (isClimbing)
+                {
+                    DisableController();
+                }
+            }
+        }
+
+        if (climbOff)
+        {
+            if (Time.realtimeSinceStartup - climbTimer > 1)
+            {
+                climbOff = false;
+            }
+        }
 
         anim.SetFloat("move", moveAmount);
         anim.SetBool("onAir", !onGround);
@@ -125,5 +164,21 @@ public class ThirdPersonController : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void DisableController()
+    {
+        rigid.isKinematic = true;
+        col.enabled = false;
+    }
+
+    public void EnableController()
+    {
+        rigid.isKinematic = false;
+        col.enabled = true;
+        anim.CrossFade("onAir", 0.2f);
+        climbOff = true;
+        isClimbing = false;
+        climbTimer = Time.realtimeSinceStartup;
     }
 }
